@@ -1,0 +1,36 @@
+name: Zero-Trust Security Shield
+
+# Uruchamia się przy każdym pushu oraz pozwala na ręczne odpalenie (workflow_dispatch)
+on:
+  push:
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+    name: DevSecOps AI Scan
+    
+    steps:
+      - name: Pobranie kodu repozytorium
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 
+
+      - name: Uruchomienie skanera i naprawy AI
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "Rozpoczynam skanowanie repozytorium Goof..."
+        
+          docker run --rm \
+            -e OPENAI_API_KEY=$OPENAI_API_KEY \
+            -v ${{ github.workspace }}:/app/data \
+            bartekmatyja/iac-sanity-checker:latest /app/data --min-severity HIGH --generate-report
+            
+      - name: 📤 Udostępnienie Raportu HTML
+        uses: actions/upload-artifact@v4
+        if: always() 
+        with:
+          name: AI-Security-Report
+          path: security_audit_report.html
