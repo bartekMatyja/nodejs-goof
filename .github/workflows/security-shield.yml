@@ -1,6 +1,5 @@
 name: Zero-Trust Security Shield
 
-# Uruchamia się przy każdym pushu oraz pozwala na ręczne odpalenie (workflow_dispatch)
 on:
   push:
     branches: [ "master", "main" ]
@@ -22,13 +21,19 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           echo "Rozpoczynam skanowanie repozytorium Goof..."
-        
-          docker run --rm \
+          
+          docker run --name ai-scanner \
             -e OPENAI_API_KEY=$OPENAI_API_KEY \
             -v ${{ github.workspace }}:/app/data \
-            bartekmatyja/iac-sanity-checker:latest /app/data --min-severity HIGH --generate-report
+            bartekmatyja/iac-sanity-checker:latest /app/data --min-severity HIGH --generate-report || true
+          
+          docker cp ai-scanner:/app/security_audit_report.html ./security_audit_report.html
+          
+          EXIT_CODE=$(docker inspect ai-scanner --format='{{.State.ExitCode}}')
+          
+          exit $EXIT_CODE
             
-      - name: 📤 Udostępnienie Raportu HTML
+      - name: Udostępnienie Raportu HTML
         uses: actions/upload-artifact@v4
         if: always() 
         with:
