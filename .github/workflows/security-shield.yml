@@ -1,5 +1,10 @@
 name: Zero-Trust Security Shield
 
+env:
+  ENABLE_AI_CHECKOV: "true"
+  ENABLE_AI_DOCKER: "true"
+  ENABLE_AI_PACKAGES: "false"
+  ENABLE_AI_GITLEAKS: "false"
 on:
   push:
     branches: [ "master", "main" ]
